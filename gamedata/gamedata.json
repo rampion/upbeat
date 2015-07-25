@@ -1,0 +1,129 @@
+{
+  "classes": [
+    {
+      "player_valid": true,
+      "npc_valid": true,
+      "name_cap": "Warrior",
+      "name": "warrior",
+      "name_pl": "warriors"
+    },
+    {
+      "player_valid": true,
+      "npc_valid": true,
+      "name_cap": "Thief",
+      "name": "thief",
+      "name_pl": "thieves"
+    },
+    {
+      "player_valid": true,
+      "npc_valid": false,
+      "name_cap": "Wizard",
+      "name": "wizard",
+      "name_pl": "wizards"
+    },
+    {
+      "player_valid": false,
+      "npc_valid": true,
+      "name_cap": "Witch Doctor",
+      "name": "witch doctor",
+      "name_pl": "witch doctors"
+    },
+    {
+      "player_valid": true,
+      "npc_valid": true,
+      "name_cap": "Berzerker",
+      "name": "berzerker",
+      "name_pl": "berzerkers"
+    }
+  ],
+  "states": [
+    {
+      "name_short": "STN",
+      "name": "stunned"
+    },
+    {
+      "name_short": "UNC",
+      "name": "unconscious"
+    },
+    {
+      "name_short": "BRN",
+      "name": "burning"
+    },
+    {
+      "name_short": "ENR",
+      "name": "enraged"
+    }
+  ],
+  "spells": [
+    {
+      "hit": {
+        "damage": 2
+      },
+      "name": "attack",
+      "valid_target_mood_max": 0,
+      "num_targets": 1,
+      "hit_chance": 80,
+      "action": "attacks the target",
+      "description": "Perform a melee attack with your weapon."
+    },
+    {
+      "num_targets": 2,
+      "hit": {
+        "damage": 4
+      },
+      "name": "fireball",
+      "valid_target_mood_max": 0,
+      "hit_chance": 80,
+      "action": "launches a ball of fire at the target.",
+      "valid_classes": [
+        "wizard"
+      ],
+      "description": "Summon a ball of fire from the ether and hurl it at an enemy."
+    },
+    {
+      "num_targets": 1,
+      "hit_chance": 100,
+      "hit": {
+        "damage": -8
+      },
+      "name": "heal",
+      "valid_target_mood_min": 0,
+      "action": "prays to their deity for aid helping the target.",
+      "valid_classes": [
+        "cleric"
+      ],
+      "description": "Call on your deity's grace to restore an ally's health."
+    },
+    {
+      "hit": {
+        "add_status": "enraged"
+      },
+      "name": "enrage",
+      "num_targets": 0,
+      "valid_classes": [
+        "berzerker"
+      ],
+      "hit_chance": 100,
+      "action": "goes into a berserker rage.",
+      "description": "Become angry."
+    },
+    {
+      "num_targets": 1,
+      "hit": {
+        "damage": 8
+      },
+      "name": "frenzied attack",
+      "hit_chance": 80,
+      "action": "unleashes their fury on a target.",
+      "valid_classes": [
+        "berzerker"
+      ],
+      "prereq_caster_status": [
+        "enraged"
+      ],
+      "description": "HULK SMASH."
+    }
+  ],
+  "version": "0.1",
+  "created": "2015-07-25T16:09:18.133572"
+}
