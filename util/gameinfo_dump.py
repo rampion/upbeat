@@ -304,17 +304,8 @@ game_text_dict = {
     "text": game_text
 }
 
-game_config_dict = {
-    'RPGCHANNEL': 'C12345',
-    'IGNORELIST': ['U12345', ],
-    'SLACK_KEY': 'xoxb-zzzz-zzzzzz',
-    'DEBUG': True,
-}
-
 if __name__ == '__main__':
-    with open('gamedata.json', 'w') as info_fh:
+    with open('../data/gamedata.json', 'w') as info_fh:
         json.dump(game_data_dict, info_fh, indent=2)
-    with open('gametext.json', 'w') as text_fh:
+    with open('../data/gametext.json', 'w') as text_fh:
         json.dump(game_text_dict, text_fh, indent=2)
-    with open('gameconfig.json', 'w') as config_fh:
-        json.dump(game_config_dict, config_fh, indent=2)
