@@ -149,6 +149,34 @@ game_dict = {
     ],
 }
 
+encounter_dict = [
+    {
+        "name": "monster",
+        "description": "A wandering monster appears",
+        "weight": 100,
+        "triggers": [
+            "add-monster-angry",
+        ]
+    },
+    {
+        "name": "monsters",
+        "description": "Two wandering monsters appear",
+        "weight": 100,
+        "triggers": [
+            "add-monster-angry",
+            "add-monster-angry",
+        ]
+    },
+    {
+        "name": "find-object",
+        "description": "The party discovers something.",
+        "weight": 20,
+        "triggers": [
+            "add-object-random"
+        ]
+    }
+]
+
 text_help = 'Welcome to ROLE PLAYING GAME.\n\n' \
             'This is a simple cooperative game where players' \
             'take part in a fantasy adventure. This chat bot "manages" the game' \
@@ -180,9 +208,10 @@ game_config = {
 
 if __name__ == '__main__':
     with open('gamedata.json', 'w') as info_fh:
-        json.dump(game_dict, info_fh, indent=4)
+        json.dump(game_dict, info_fh, indent=2)
     with open('gametext.json', 'w') as text_fh:
-        json.dump(game_text, text_fh, indent=4)
+        json.dump(game_text, text_fh, indent=2)
     with open('gameconfig.json', 'w') as config_fh:
-        json.dump(game_config, config_fh, indent=4)
-
+        json.dump(game_config, config_fh, indent=2)
+    with open('encounters.json', 'w') as encounter_fh:
+        json.dump(encounter_dict, encounter_fh, indent=2)
