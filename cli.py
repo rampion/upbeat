@@ -29,7 +29,7 @@ def run_game():
             if command:
                 handle_input(command)
             else:
-                print('eof')
+                print('quitting')
                 exit(0)
         else:
             no_input()
@@ -39,6 +39,7 @@ def run_game():
 def do_setup():
     global GAME
     GAME = RpgGame()
+    print('^D to quit. Type stuff:')
 
 
 if __name__ == '__main__':
