@@ -1,6 +1,6 @@
-# game
+# rpg
 
-The reusable rpg class
+The reusable rpg module
 
 from rpg.game import RpgGame
 
