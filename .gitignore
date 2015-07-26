@@ -63,3 +63,6 @@ target/
 old/
 
 RPG.json
+
+data/gametext.json
+data/gamedata.json
