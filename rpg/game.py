@@ -132,7 +132,7 @@ class RpgGameDB(object):
             for char_cond in game_data['conditions']:
                 cond = RpgGameDB.CharacterCondition(name=char_cond['name'])
                 cond.name_short = char_cond['name_short']
-                dprint('Loaded state %s' % cond.name)
+                dprint('Loaded condition %s' % cond.name)
                 self.conditions.append(cond)
             for char_race in game_data['races']:
                 cr = RpgGameDB.CharacterRace(name=char_race['name'])
@@ -195,10 +195,10 @@ class RpgGameDB(object):
                 response += '\n'
         return response
 
-    def list_states(self, newline=True):
+    def list_conditions(self, newline=True):
         response = ''
-        for s in self.states:
-            response += s.name
+        for c in self.conditions:
+            response += c.name
             if newline:
                 response += '\n'
         return response
@@ -421,11 +421,11 @@ class RpgGame(object):
                     return self.db.list_races()
                 elif things == 'characters':
                     return self.list_characters()
-                elif things == 'states':
-                    return self.db.list_states()
+                elif things == 'conditions':
+                    return self.db.list_conditions()
                 else:
                     return '[[ I do not know any of those. ]]'
-            except KeyError:
+            except (KeyError, IndexError):
                 return '[[ List needs another parameter. ]]'
         return self.db.get_text('text_help_short')
 
