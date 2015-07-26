@@ -4,9 +4,9 @@ from __future__ import print_function
 import requests
 import random
 import time
+import json
 
 DEBUG = True
-
 
 def dprint(debug_message):
     if DEBUG:
@@ -15,9 +15,6 @@ def dprint(debug_message):
 
 class RpgGameDB(object):
     CONFIG_VERSION = '0.2'
-    URL_GAMEDATA = 'http://upbeat.projectmayhem.org:21218/data/gamedata.json'
-    URL_GAMETEXT = 'http://upbeat.projectmayhem.org:21218/data/gametext.json'
-    URL_ENCOUNTERS = 'http://upbeat.projectmayhem.org:21218/data/encounters.json'
     ERROR_LOADING_ERRORS = '[[ Unrecoverable error trying to load language files. Aborting. ]]'
     ERROR_UNKNOWN_COMMAND = 'I do not understand what you want to do.'
     ERROR_UNDEFINED_STRING = '[[ A message goes here but it is not defined for your language. ]]'
@@ -76,6 +73,7 @@ class RpgGameDB(object):
     #         self.
 
     def __init__(self):
+        self.config = self.load_config()
         self.error = False
         self.stats = []
         self.classes = []
@@ -87,8 +85,26 @@ class RpgGameDB(object):
         self.load_text()
         self.load_data()
 
+    @staticmethod
+    def load_config():
+        config = {}
+        try:
+            with open('RPG.json', 'r') as config_fh:
+                config = json.load(config_fh)
+        except IOError:
+            print('Config file not readable. Quitting.')
+            exit(1)
+        try:
+            if config['URL_BASE']:
+                pass
+        except KeyError:
+            print('URL_BASE not defined. Quitting.')
+            exit(1)
+        return config
+
     def load_text(self):
-        r = requests.get(RpgGameDB.URL_GAMETEXT)
+        url_gametext = self.config['URL_BASE'] + '/gametext.json'
+        r = requests.get(url_gametext)
         if r.status_code == requests.codes.ok:
             text_data = r.json()
             if text_data['version'] != RpgGameDB.CONFIG_VERSION:
@@ -103,7 +119,8 @@ class RpgGameDB(object):
             self.error = True
 
     def load_data(self):
-        r = requests.get(RpgGameDB.URL_GAMEDATA)
+        url_gamedata = self.config['URL_BASE'] + '/gamedata.json'
+        r = requests.get(url_gamedata)
         if r.status_code == requests.codes.ok:
             game_data = r.json()
             # This whole thing explodes if there's a missing section in the JSON.
