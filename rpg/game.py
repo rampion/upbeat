@@ -14,12 +14,24 @@ def dprint(debug_message):
 
 
 class RpgGameDB(object):
+    CONFIG_VERSION = '0.2'
     URL_GAMEDATA = 'http://upbeat.projectmayhem.org:21218/data/gamedata.json'
     URL_GAMETEXT = 'http://upbeat.projectmayhem.org:21218/data/gametext.json'
     URL_ENCOUNTERS = 'http://upbeat.projectmayhem.org:21218/data/encounters.json'
     ERROR_LOADING_ERRORS = '[[ Unrecoverable error trying to load language files. Aborting. ]]'
     ERROR_UNKNOWN_COMMAND = 'I do not understand what you want to do.'
     ERROR_UNDEFINED_STRING = '[[ A message goes here but it is not defined for your language. ]]'
+
+    class CharacterStat(object):
+        def __init__(self, name, base=10, maximum=20):
+            self.name = name
+            self.value_base = base
+            self.value_max = maximum
+
+    # class CharacterStatMod(object):
+    #     def __init__(self, stat, mod_value):
+    #         self.stat = stat
+    #         self.mod_value = mod_value
 
     class CharacterClass(object):
         def __init__(self, name):
@@ -28,6 +40,7 @@ class RpgGameDB(object):
             self.name_pl = name + 's'
             self.valid_player = True
             self.valid_npc = True
+            self.stat_modifiers = []
 
     class CharacterRace(object):
         def __init__(self, name):
@@ -42,20 +55,21 @@ class RpgGameDB(object):
             self.name = name
             self.is_hidden = False
 
-        # def is_castable(self, caster, target):
-        #     return True
+            # def is_castable(self, caster, target):
+            #     return True
 
-    class CharacterState(object):
+    class CharacterCondition(object):
         def __init__(self, name=''):
             self.name = name
+            self.name_short = name
 
     class GameEncounter(object):
         def __init__(self, name):
             self.name = name
-            self.triggers = []
+            self.events = []
 
-        def add_trigger(self, trigger):
-            self.triggers.append(trigger)
+        def add_event(self, event):
+            self.events.append(event)
 
     # class GameEncounterTrigger(object):
     #     def __init__(self):
@@ -63,67 +77,78 @@ class RpgGameDB(object):
 
     def __init__(self):
         self.error = False
+        self.stats = []
         self.classes = []
         self.races = []
         self.spells = []
-        self.states = []
+        self.conditions = []
         self.encounters = []
         self.texts = {}
         self.load_text()
         self.load_data()
-        self.load_encounters()
 
     def load_text(self):
         r = requests.get(RpgGameDB.URL_GAMETEXT)
         if r.status_code == requests.codes.ok:
-            texts = r.json()
-            for text in texts:
-                self.texts[text] = texts[text]
+            text_data = r.json()
+            if text_data['version'] != RpgGameDB.CONFIG_VERSION:
+                dprint('config version mismatch')
+                self.error = True
+                return
+            for text in text_data['text']:
+                self.texts[text] = text_data['text'][text]
                 dprint('Loaded text %s' % text)
         else:
-            dprint('Error loading text')
+            dprint('Error retrieving text')
             self.error = True
 
     def load_data(self):
         r = requests.get(RpgGameDB.URL_GAMEDATA)
         if r.status_code == requests.codes.ok:
             game_data = r.json()
-            for charclass in game_data['classes']:
-                cc = RpgGameDB.CharacterClass(name=charclass['name'])
-                cc.name_cap = charclass['name_cap']
-                cc.name_pl = charclass['name_pl']
+            # This whole thing explodes if there's a missing section in the JSON.
+            # I considered wrapping each part in try/except or whole thing
+            # but TBH if we're missing data the whole thing should just crash
+            if game_data['version'] != RpgGameDB.CONFIG_VERSION:
+                dprint('config version mismatch')
+                self.error = True
+                return
+            for char_stat in game_data['stats']:
+                st = RpgGameDB.CharacterStat(name=char_stat['name'])
+                st.value_base = char_stat['value_base']
+                st.value_max = char_stat['value_max']
+                dprint('Loaded stat %s' % st.name)
+                self.stats.append(st)
+            for char_class in game_data['classes']:
+                cc = RpgGameDB.CharacterClass(name=char_class['name'])
+                cc.name_cap = char_class['name_cap']
+                cc.name_pl = char_class['name_pl']
                 dprint('Loaded class %s' % cc.name_cap)
                 self.classes.append(cc)
-            for charspell in game_data['spells']:
-                cs = RpgGameDB.CharacterSpell(name=charspell['name'])
-                dprint('Loaded spell %s' % cs.name)
-                self.spells.append(cs)
-            for charstate in game_data['states']:
-                state = RpgGameDB.CharacterState(name=charstate['name'])
-                dprint('Loaded state %s' % state.name)
-                self.states.append(state)
-            for charrace in game_data['races']:
-                cr = RpgGameDB.CharacterRace(name=charrace['name'])
-                cr.name_cap = charrace['name_cap']
-                cr.name_pl = charrace['name_pl']
+            for char_spell in game_data['spells']:
+                sp = RpgGameDB.CharacterSpell(name=char_spell['name'])
+                dprint('Loaded spell %s' % sp.name)
+                self.spells.append(sp)
+            for char_cond in game_data['conditions']:
+                cond = RpgGameDB.CharacterCondition(name=char_cond['name'])
+                cond.name_short = char_cond['name_short']
+                dprint('Loaded state %s' % cond.name)
+                self.conditions.append(cond)
+            for char_race in game_data['races']:
+                cr = RpgGameDB.CharacterRace(name=char_race['name'])
+                cr.name_cap = char_race['name_cap']
+                cr.name_pl = char_race['name_pl']
                 dprint('Loaded race %s' % cr.name_cap)
                 self.races.append(cr)
-        else:
-            dprint('Error loading data')
-            self.error = True
-
-    def load_encounters(self):
-        r = requests.get(RpgGameDB.URL_ENCOUNTERS)
-        if r.status_code == requests.codes.ok:
-            for encounter in r.json():
-                e = RpgGameDB.GameEncounter(name=encounter['name'])
-                for t in encounter['triggers']:
-                    e.add_trigger(t)
-                for x in range(0, encounter['weight']):
+            for char_enc in game_data['encounters']:
+                e = RpgGameDB.GameEncounter(name=char_enc['name'])
+                for v in char_enc['events']:
+                    e.add_event(v)
+                for x in range(0, char_enc['weight']):
                     self.encounters.append(e)
                 dprint('Loaded encounter %s' % e.name)
         else:
-            dprint('Error loading encounters')
+            dprint('Error retrieving data')
             self.error = True
 
     def get_text(self, message):
@@ -131,19 +156,19 @@ class RpgGameDB(object):
 
     @property
     def max_class(self):
-        return len(self.classes)-1
+        return len(self.classes) - 1
 
     @property
     def max_race(self):
-        return len(self.races)-1
+        return len(self.races) - 1
 
     @property
     def max_encounter(self):
-        return len(self.encounters)-1
+        return len(self.encounters) - 1
 
     @property
     def max_spell(self):
-        return len(self.spells)-1
+        return len(self.spells) - 1
 
     def list_spells(self, newline=True):
         response = ''
@@ -178,19 +203,28 @@ class RpgGameDB(object):
                 response += '\n'
         return response
 
+    def random_class(self, npc=False):
+        c = self.classes[random.randint(0, len(self.classes) - 1)]
+        return c
+
+    def random_race(self, npc=False):
+        r = self.races[random.randint(0, len(self.races) - 1)]
+        return r
 
 
 class RpgGame(object):
-    ENCOUNTER_CHANCE = 50       # chance of a random encounter happening
-    ENCOUNTER_COOLDOWN = 300    # minimum seconds between encounters
+    ENCOUNTER_CHANCE = 50  # chance of a random encounter happening
+    ENCOUNTER_COOLDOWN = 300  # minimum seconds between encounters
 
     class Character(object):
         def __init__(self, owner=None):
             self.name = self.random_name()
-            self.hp_curr = 0
-            self.hp_max = 0
-            self.mood = 0
             self.owner = owner
+            self.hp_curr = 0
+            self.hp_max = 20
+            self.mood = 0
+            self.conditions = []
+            self.stats = []
             self.cc = None
             self.cr = None
 
@@ -203,9 +237,9 @@ class RpgGame(object):
                 'Fred',
                 'Maria',
                 'Cornelius',
-                'Janice'
+                'Janice',
             ]
-            return names[random.randint(0, len(names)-1)]
+            return names[random.randint(0, len(names) - 1)]
 
         # def is_friendly(self):
         #     if self.owner is not None:
@@ -214,14 +248,14 @@ class RpgGame(object):
         #         return False
 
         def fullinfo(self):
-            response = 'You control the following character:\n'
-            response += '*Name:* ' + self.name + '\n'
+            response = '*Name:* ' + self.name + '\n'
             response += '*Race:* ' + self.get_race() + '\n'
             response += '*Class:* ' + self.get_class() + '\n'
             return response
 
         def summary(self):
-            response = '*%s* - %s %s (%d/%d) [%s]' % (self.name, self.get_race(), self.get_class(), self.hp_curr, self.hp_max, self.owner)
+            response = '*%s* - %s %s (%d/%d) [%s]' % (
+            self.name, self.get_race(), self.get_class(), self.hp_curr, self.hp_max, self.owner)
             return response
 
         def get_class(self):
@@ -255,7 +289,8 @@ class RpgGame(object):
             return response
 
         def reset(self):
-            pass
+            self.hp_curr = self.hp_max
+            self.conditions = []
 
     def __init__(self, language='en'):
         self.public_message_queue = []
@@ -280,18 +315,24 @@ class RpgGame(object):
     def run(self):
         messages = []
         if self.disabled:
+            dprint('run - disabled')
             return messages
         # if bot can take any actions, take them
+        dprint('%d messages, dequeueing' % len(self.public_message_queue))
         for m in self.public_message_queue:
             messages.append(m)
         self.public_message_queue = []
         return messages
 
     def start_encounter(self):
-        e = self.db.encounters[random.randint(0, self.db.max_encounter)]
-        assert isinstance(e, RpgGameDB.GameEncounter)
-        for trigger in e.triggers:
-            print(trigger)  # DELETE ME
+        encounter = self.db.encounters[random.randint(0, self.db.max_encounter)]
+        assert isinstance(encounter, RpgGameDB.GameEncounter)
+        for event in encounter.triggers:
+            if event == 'add-monster-angry':
+                c = RpgGame.Character()
+                c.mood = -3
+                # c.cc =
+        self.encounter_timestamp = time.time()
 
     def finish_encounter(self):
         self.combat = False
@@ -300,14 +341,22 @@ class RpgGame(object):
 
     def trigger_encounter(self):
         if self.disabled:
+            dprint('trigger - disabled')
             return False
         if self.combat:
+            dprint('trigger - in combat')
             return False
-        if self.encounter_timestamp + RpgGame.ENCOUNTER_COOLDOWN < int(time.time()):
+        if self.encounter_timestamp + RpgGame.ENCOUNTER_COOLDOWN > int(time.time()):
+            dprint('trigger - too soon: %d %d %d' % (
+            self.encounter_timestamp, RpgGame.ENCOUNTER_COOLDOWN, int(time.time())))
             return False
         if random.randint(1, 100) > RpgGame.ENCOUNTER_CHANCE:
+            dprint('trigger - JACKPOT')
             self.start_encounter()
+            return True
         else:
+            dprint('trigger - nothing')
+            self.public_message_queue.append(self.db.get_text('party-wander'))
             return False
 
     # PLAYER commands
@@ -322,8 +371,8 @@ class RpgGame(object):
         if self.is_playing(player):
             return self.db.get_text('already-playing')
         c = RpgGame.Character(owner=player)
-        c.cc = self.db.classes[random.randint(0, len(self.db.classes)-1)]
-        c.cr = self.db.races[random.randint(0, len(self.db.races)-1)]
+        c.cc = self.db.random_class()
+        c.cr = self.db.random_race()
         c.reset()
         self.characters.append(c)
         return c.name + self.db.get_text('party-join')
@@ -398,6 +447,7 @@ class RpgGame(object):
 
 def run_rpg_tests():
     pass
+
 
 if __name__ == '__main__':
     run_rpg_tests()
