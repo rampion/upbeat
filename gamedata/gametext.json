@@ -1,4 +1,18 @@
 {
-  "text_help": "Welcome to ROLE PLAYING GAME.\n\nThis is a simple cooperative game where playerstake part in a fantasy adventure. This chat bot \"manages\" the gameand anyone in the channel is welcometo join the team (or just watch).\n\nAll commands start with an exclamation point:\n- *!join* - The bot will create a character for you (not available during combat)\n- *!quit* - Your character will leave the party\n- *!attack* - Your character will fight a monster during combat\n- *!spell* - Your character will cast a spell, if able to do so\n- *!heal* - Your character will attempt to heal an ally, if able to do so\n- *!run* - Your character will attempt to run away from combat\n(These are not all the commands.)",
-  "text_help_short": "[[ I am a game bot. Message me the world \"help\" for details. ]]"
+  "text": {
+    "no-classes": "No classes known.", 
+    "party-join": " joins the party.", 
+    "no-spells": "No spells known.", 
+    "party-quit": " departs the party.", 
+    "not-playing": "No character was found for you. Have you tried joining the game with `!join` in the game channel?", 
+    "party-wander": "The party continues to wander without incident.", 
+    "no-characters": "No characters are present.", 
+    "no-races": "No races known.", 
+    "unknown": "I do not understand what you want me to do!", 
+    "your-char": "You control the following character:\n", 
+    "text_help_short": "[[ I am a game bot. Message me the world \"help\" for details. ]]", 
+    "text_help": "Welcome to ROLE PLAYING GAME.\n\nThis is a simple cooperative game where playerstake part in a fantasy adventure. This chat bot \"manages\" the gameand anyone in the channel is welcometo join the team (or just watch).\n\nAll commands start with an exclamation point:\n- *!join* - The bot will create a character for you (not available during combat)\n- *!quit* - Your character will leave the party\n- *!attack* - Your character will fight a monster during combat\n- *!spell* - Your character will cast a spell, if able to do so\n- *!heal* - Your character will attempt to heal an ally, if able to do so\n- *!run* - Your character will attempt to run away from combat\n(These are not all the commands.)"
+  }, 
+  "version": "0.2", 
+  "created": "2015-07-26T00:55:12.865606"
 }
